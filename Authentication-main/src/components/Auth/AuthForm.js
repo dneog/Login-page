@@ -1,12 +1,14 @@
-import { useState, useRef } from 'react';
-
+import { useState, useRef , useContext} from 'react';
+import AuthContext from '../../Store/AuthContext';
 import classes from './AuthForm.module.css';
 
 const AuthForm = () => {
+ const authCtx= useContext(AuthContext);
   const emailInputRef= useRef();
   const passwordInputRef= useRef();
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading]= useState(false)
+  const [loading, setLoading]= useState(false);
+
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -19,7 +21,7 @@ const AuthForm = () => {
     setLoading(true)
     let url;
     if(isLogin){
-      url= 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAcs8nLn2SZVKhB4JcRURQvIPdouSEVqgE'
+      url= 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAcs8nLn2SZVKhB4JcRURQvIPdouSEVqgE'
     }else{
       url= 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAcs8nLn2SZVKhB4JcRURQvIPdouSEVqgE' 
     }
@@ -41,20 +43,22 @@ const AuthForm = () => {
             return res.json()
         }else{
          return res.json().then(data=> {
-            console.log(data);
-            let errorMessage
-            if(data && data.error && data.error.message){
-              errorMessage= data.error.message
-            }
+           
+            let errorMessage= 'Authentication Failed';
+            
            
             throw new Error(errorMessage)
-          }).then(data=> {
-            
-          }).catch(err=> {
-            alert(err.message)
+
           })
         }
       })
+          
+          .then(data=> {
+            authCtx.login(data.idToken);
+          }).catch(err=> {
+            alert(err.message)
+          })
+        
   }
 
   return (
